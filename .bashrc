@@ -206,17 +206,17 @@ alias savehist='history -a'
 function run_ssh-agent() {
     echo "Running ssh-agent from .bashrc"
     eval "$(ssh-agent)"
-    ln -sf "$SSH_AUTH_SOCK" "${HOME}/.ssh/ssh_auth_sock_${HOST}"
+    ln -sf "$SSH_AUTH_SOCK" "${HOME}/.ssh/ssh_auth_sock_${HOSTNAME}"
 }
 
 # start the ssh-agent && and prompt for ssh passphrase only after first login
 ssh_start_agent() {
-    if [ ! -S "${HOME}/.ssh/ssh_auth_sock_${HOST}" ]; then
+    if [ ! -S "${HOME}/.ssh/ssh_auth_sock_${HOSTNAME}" ]; then
         echo "Symlink not found"
         run_ssh-agent
     else
         # Get ssh-agent PID from symlink
-        SSH_LINK=`readlink ${HOME}/.ssh/ssh_auth_sock_${HOST}`
+        SSH_LINK=`readlink ${HOME}/.ssh/ssh_auth_sock_${HOSTNAME}`
         # Add one cus it's weird
         LINK_PID=$(( ${SSH_LINK##*.} + 1 ))
 
@@ -232,7 +232,7 @@ ssh_start_agent() {
             echo "ssh-agent found!"
         fi
     fi
-    export SSH_AUTH_SOCK="${HOME}/.ssh/ssh_auth_sock_${HOST}"
+    export SSH_AUTH_SOCK="${HOME}/.ssh/ssh_auth_sock_${HOSTNAME}"
     ssh-add -l > /dev/null || ssh-add
 }
 ssh_start_agent

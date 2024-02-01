@@ -123,6 +123,10 @@ fi
 ##
 # End of Ubuntu 20 stuff
 
+if [ -d ~/.project ]; then
+    . ~/.project/.elroy.bashrc
+fi
+
 # Set our default editor to be vim other it will be nano
 EDITOR="vim"
 
@@ -236,3 +240,23 @@ ssh_start_agent() {
     ssh-add -l > /dev/null || ssh-add
 }
 ssh_start_agent
+
+
+# Keep vscode socket update
+save_vscode_socket() {
+    # Check if we are in a shell in tmux
+    if [[ -z "$TMUX" ]] && ! [[ -z "$VSCODE_IPC_HOOK_CLI" ]]; then
+        echo "$VSCODE_IPC_HOOK_CLI"
+        echo "$VSCODE_IPC_HOOK_CLI" > ~/.vscode-socket-path
+    fi
+}
+save_vscode_socket
+
+load_vscode_socket() {
+    if ! [[ -z "$TMUX" ]] && ! [[ -z "$VSCODE_IPC_HOOK_CLI" ]]; then
+        echo "VSCODE_IPC_HOOK_CLI=$(cat ~/.vscode-socket-path)"
+        VSCODE_IPC_HOOK_CLI=$(cat ~/.vscode-socket-path)
+    fi
+}
+
+alias code='load_vscode_socket; code'

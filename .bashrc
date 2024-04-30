@@ -38,42 +38,20 @@ if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
 
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-force_color_prompt=yes
-
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
+NORMAL="\[\033[0m\]"
+RED="\[\033[31;1m\]"
+__timestamp="[\D{%T}]"
+__user_and_host="\[\033[0;31m\]\u@\h"
+if [[ $EUID -ne 0 ]]; then
+    __user_and_host="\[\033[01;32m\]\u@\h"
 fi
-
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-unset color_prompt force_color_prompt
-
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-    ;;
-*)
-    ;;
-esac
+__cur_location="\[\033[01;35m\]\w"
+__git_branch_color="\[\033[31m\]"
+__git_branch='`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\(\\\\\1\)\ /`'
+__prompt_tail="\[\033[35m\]$"
+__last_color="\[\033[00m\]"
+PS1="$__timestamp $__user_and_host $__cur_location $__git_branch_color$__git_branch\n$__prompt_tail$__last_color "
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
@@ -104,10 +82,9 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
-# Screw it, we don't need a seperate file just add it in here.
-# if [ -f ~/.bash_aliases ]; then
-#     . ~/.bash_aliases
-# fi
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -242,10 +219,10 @@ ssh_start_agent() {
 ssh_start_agent
 
 
-# Keep vscode socket update
+## Keep vscode socket update
 save_vscode_socket() {
     # Check if we are in a shell in tmux
-    if [[ -z "$TMUX" ]] && ! [[ -z "$VSCODE_IPC_HOOK_CLI" ]]; then
+    if [[ -z "$TMUX" ]] &&  [[ ! -z "$VSCODE_IPC_HOOK_CLI" ]]; then
         echo "$VSCODE_IPC_HOOK_CLI"
         echo "$VSCODE_IPC_HOOK_CLI" > ~/.vscode-socket-path
     fi
@@ -253,7 +230,7 @@ save_vscode_socket() {
 save_vscode_socket
 
 load_vscode_socket() {
-    if ! [[ -z "$TMUX" ]] && ! [[ -z "$VSCODE_IPC_HOOK_CLI" ]]; then
+    if [[ ! -z "$TMUX" ]] && [[ ! -z "$VSCODE_IPC_HOOK_CLI" ]]; then
         echo "VSCODE_IPC_HOOK_CLI=$(cat ~/.vscode-socket-path)"
         VSCODE_IPC_HOOK_CLI=$(cat ~/.vscode-socket-path)
     fi

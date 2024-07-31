@@ -1,3 +1,8 @@
+[user]
+    name = Prosper Van
+    # email = prosper.van@fluke.com
+    # email = vanprosper@gmail.com
+
 [push]
     default = simple
 
